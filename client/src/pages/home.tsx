@@ -13,22 +13,18 @@ import { AnimeDetail } from '@/components/anime-detail';
 export default function Home() {
   const { animes, language } = useStore();
   
-  // States for filtering
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedStudio, setSelectedStudio] = useState<string>('all');
   const [selectedGenre, setSelectedGenre] = useState<string>('all');
 
-  // Side Panel State
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
 
-  // Derived Data: Extract unique options
   const years = useMemo(() => Array.from(new Set(animes.map(a => getYear(parseISO(a.releaseDate)).toString()))).sort(), [animes]);
   const studios = useMemo(() => Array.from(new Set(animes.map(a => a.studio))).sort(), [animes]);
   const genres = useMemo(() => Array.from(new Set(animes.flatMap(a => a.genre))).sort(), [animes]);
 
-  // Filtering Logic
   const filteredAnimes = useMemo(() => {
     return animes.filter(anime => {
       const date = parseISO(anime.releaseDate);
@@ -88,13 +84,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 relative min-h-screen">
-      
-      {/* Left side: Main Content */}
-      <div className={`flex-1 transition-all duration-500`}>
-        {/* Filters Bar with Sticky Blur Mask */}
+    <div className="relative min-h-screen">
+      <div className="flex-1">
         <div className="sticky top-16 z-40 bg-background/0 -mx-4 px-4 pt-4 pb-2">
-          {/* The "Mask" effect for scrolling elements */}
           <div className="absolute inset-x-0 -top-20 h-40 bg-gradient-to-b from-background via-background/95 to-transparent pointer-events-none" />
           
           <div className="relative flex flex-wrap items-center gap-3 backdrop-blur-xl border border-white/10 bg-background/60 p-4 rounded-3xl shadow-lg">
@@ -149,7 +141,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Content Grid */}
         <div className="space-y-12 pb-20 mt-4">
           {groupedAnimes.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground">
@@ -182,25 +173,23 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Side Panel: Detail View - Wider and more centered */}
       <AnimatePresence>
         {selectedAnime && (
           <>
-            {/* Backdrop for focus */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedAnime(null)}
-              className="fixed inset-0 bg-background/40 backdrop-blur-sm z-40 lg:block hidden"
+              className="fixed inset-0 bg-background/60 backdrop-blur-md z-40"
             />
             
             <motion.aside
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-              className="fixed top-20 right-4 lg:right-[10%] bottom-4 w-[95%] lg:w-[600px] z-50 glass-panel rounded-[2rem] overflow-hidden shadow-2xl flex flex-col border border-white/10"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-x-4 inset-y-20 lg:inset-x-[10%] lg:inset-y-[15%] z-50 glass-panel rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col border border-white/10"
             >
               <AnimeDetail 
                 anime={selectedAnime} 
@@ -211,7 +200,6 @@ export default function Home() {
           </>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
