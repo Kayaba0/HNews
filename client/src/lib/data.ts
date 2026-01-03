@@ -14,6 +14,7 @@ export interface Anime {
   description: string;
   coverImage: string;
   gallery: string[];
+  episodes?: number;
 }
 
 interface AppState {
@@ -77,6 +78,7 @@ const generateMockAnimes = (): Anime[] => {
     ].filter((v, i, a) => a.indexOf(v) === i);
     
     const randomCover = [coverAction, coverScifi, coverSlice][Math.floor(Math.random() * 3)];
+    const randomEpisodes = Math.floor(Math.random() * 12) + 12;
 
     animes.push({
       id: i.toString(),
@@ -87,6 +89,7 @@ const generateMockAnimes = (): Anime[] => {
       description: 'An epic journey across unknown lands where heroes are forged and legends are born in the heat of battle.',
       coverImage: randomCover,
       gallery: [randomCover, coverAction, coverScifi],
+      episodes: randomEpisodes,
     });
   }
 

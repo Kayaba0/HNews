@@ -4,7 +4,7 @@ import { format, parseISO, getYear } from 'date-fns';
 import { it, enUS } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, Calendar, Building2, Layers, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { X, Calendar, Building2, Layers, ChevronLeft, ChevronRight, Maximize2, Tv } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -118,12 +118,12 @@ export function AnimeDetail({ anime, onClose, onQuickFilter }: AnimeDetailProps)
 
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
                 <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
-                  <Calendar className="size-5" />
+                  <Tv className="size-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{language === 'it' ? 'Data' : 'Date'}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{language === 'it' ? 'Episodi' : 'Episodes'}</span>
                   <span className="font-bold text-base leading-tight">
-                    {format(parseISO(anime.releaseDate), 'dd MMM yyyy')}
+                    {anime.episodes || 'TBA'}
                   </span>
                 </div>
               </div>
