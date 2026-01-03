@@ -78,9 +78,9 @@ export function CalendarView({ onClose, onSelectAnime }: CalendarViewProps) {
                       className="group cursor-pointer relative aspect-video rounded-lg overflow-hidden border border-white/10 shadow-lg"
                     >
                       <img src={anime.coverImage} className="w-full h-full object-cover" alt={anime.title} />
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-                      <div className="absolute bottom-1 left-1 right-1">
-                        <p className="text-[8px] font-bold text-white truncate drop-shadow-md">{anime.title}</p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/60 transition-colors" />
+                      <div className="absolute bottom-1.5 left-1.5 right-1.5">
+                        <p className="text-[10px] leading-tight font-bold text-white line-clamp-2 drop-shadow-md">{anime.title}</p>
                       </div>
                     </motion.div>
                   ))}
