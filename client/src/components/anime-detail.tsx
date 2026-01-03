@@ -82,7 +82,7 @@ export function AnimeDetail({ anime, onClose, onQuickFilter }: AnimeDetailProps)
                 className="border-secondary/50 text-secondary bg-secondary/10 px-4 py-1.5 text-base rounded-xl cursor-pointer hover:bg-secondary/20 transition-all"
                 onClick={() => onQuickFilter('year', getYear(parseISO(anime.releaseDate)).toString())}
               >
-                {format(parseISO(anime.releaseDate), 'MMMM yyyy', { locale: language === 'it' ? it : enUS })}
+                {format(parseISO(anime.releaseDate), 'dd MMMM yyyy', { locale: language === 'it' ? it : enUS })}
               </Badge>
               <h2 className="text-4xl lg:text-6xl font-display font-bold text-white leading-none">
                 {anime.title}
@@ -147,7 +147,7 @@ export function AnimeDetail({ anime, onClose, onQuickFilter }: AnimeDetailProps)
                   <motion.div 
                     key={idx} 
                     whileHover={{ scale: 1.05 }}
-                    className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group bg-black/50 border border-white/5"
+                    className="relative aspect-video rounded-xl overflow-hidden cursor-pointer group bg-black/50 border border-white/5"
                     onClick={() => setLightboxIndex(idx)}
                   >
                     <img 
