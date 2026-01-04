@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { it, enUS } from 'date-fns/locale';
-import { Calendar, Edit3 } from 'lucide-react';
+import { Calendar, Wrench } from 'lucide-react';
 import { Anime, useStore } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ export function AnimeCard({ anime, onClick, onEdit }: AnimeCardProps) {
             onEdit();
           }}
         >
-          <Edit3 className="size-5 text-white" />
+          <Wrench className="size-5 text-white" />
         </Button>
       )}
     </motion.div>

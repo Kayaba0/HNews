@@ -8,18 +8,48 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Save, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Save, Trash2, Plus, Image as ImageIcon, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const animeSchema = z.object({
   title: z.string().min(1, "Title is required"),
   studio: z.string().min(1, "Studio is required"),
   releaseDate: z.string().min(1, "Date is required"),
   description: z.string().optional(),
-  genreString: z.string().min(1, "Add at least one genre separated by comma"),
+  genreString: z.string().optional(),
   episodes: z.number().optional().or(z.string().transform(v => v === '' ? undefined : Number(v))),
 });
+
+const defaultGenres = [
+  'Action', 'Azione',
+  'Adventure', 'Avventura',
+  'Comedy', 'Commedia',
+  'Drama', 'Drammatico',
+  'Fantasy', 'Fantasia',
+  'Sci-Fi', 'Fantascienza',
+  'Horror', 'Orrore',
+  'Mystery', 'Mistero',
+  'Psychological', 'Psicologico',
+  'Romance', 'Romantico',
+  'Slice of Life', 'Fetta di vita',
+  'Sports', 'Sport',
+  'Supernatural', 'Soprannaturale',
+  'Thriller', 'Brivido',
+  'Mecha', 'Mecha',
+  'Military', 'Militare',
+  'Music', 'Musica',
+  'School', 'Scolastico',
+  'Shonen', 'Shonen',
+  'Seinen', 'Seinen',
+  'Shojo', 'Shojo',
+  'Josei', 'Josei',
+  'Isekai', 'Isekai',
+  'Cyberpunk', 'Cyberpunk'
+];
 
 interface AnimeEditorProps {
   anime?: Anime | null;
@@ -27,12 +57,17 @@ interface AnimeEditorProps {
 }
 
 export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
-  const { addAnime, updateAnime, deleteAnime, language } = useStore();
+  const { animes, addAnime, updateAnime, deleteAnime, language } = useStore();
   const { toast } = useToast();
   
   const [coverPreview, setCoverPreview] = useState<string | null>(anime?.coverImage || null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>(anime?.gallery || []);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(anime?.genre || []);
+  const [genreInput, setGenreInput] = useState('');
   
+  // Combine default genres with existing ones from other animes
+  const allExistingGenres = Array.from(new Set([...defaultGenres, ...animes.flatMap(a => a.genre)]));
+
   const form = useForm<z.infer<typeof animeSchema>>({
     resolver: zodResolver(animeSchema),
     defaultValues: {
@@ -40,7 +75,7 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
       studio: anime?.studio || '',
       releaseDate: anime?.releaseDate || '',
       description: anime?.description || '',
-      genreString: anime?.genre.join(', ') || '',
+      genreString: '', // No longer used for input but kept for schema compatibility
       episodes: anime?.episodes || undefined,
     }
   });
@@ -51,13 +86,18 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
       return;
     }
 
+    if (selectedGenres.length === 0) {
+      toast({ title: language === 'it' ? "Aggiungi almeno un genere" : "Add at least one genre", variant: "destructive" });
+      return;
+    }
+
     const animeData: Anime = {
       id: anime?.id || crypto.randomUUID(),
       title: data.title,
       studio: data.studio,
       releaseDate: data.releaseDate,
       description: data.description || '',
-      genre: data.genreString.split(',').map(s => s.trim()).filter(Boolean),
+      genre: selectedGenres,
       coverImage: coverPreview,
       gallery: galleryPreviews,
       episodes: typeof data.episodes === 'number' ? data.episodes : undefined,
@@ -94,6 +134,18 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
 
   const removeGalleryImage = (index: number) => {
     setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addGenre = (genre: string) => {
+    const trimmed = genre.trim();
+    if (trimmed && !selectedGenres.includes(trimmed)) {
+      setSelectedGenres(prev => [...prev, trimmed]);
+    }
+    setGenreInput('');
+  };
+
+  const removeGenre = (genre: string) => {
+    setSelectedGenres(prev => prev.filter(g => g !== genre));
   };
 
   return (
@@ -218,19 +270,60 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="genreString"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{language === 'it' ? 'Generi (separati da virgola)' : 'Genres (comma separated)'}</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Action, Sci-Fi" className="glass-card border-white/5" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Genre Management */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">{language === 'it' ? 'Generi' : 'Genres'}</label>
+            <div className="flex flex-wrap gap-2 p-2 min-h-[46px] rounded-xl border border-white/5 bg-black/20">
+              {selectedGenres.map(genre => (
+                <Badge key={genre} variant="secondary" className="gap-1 px-3 py-1 rounded-lg bg-primary/20 text-primary border-primary/20">
+                  {genre}
+                  <X className="size-3 cursor-pointer hover:text-white" onClick={() => removeGenre(genre)} />
+                </Badge>
+              ))}
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 rounded-lg text-xs border border-dashed border-white/20 hover:border-primary/50">
+                    <Plus className="size-3 mr-1" /> {language === 'it' ? 'Aggiungi genere' : 'Add genre'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0 glass-panel" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder={language === 'it' ? 'Cerca o scrivi...' : 'Search or type...'} 
+                      value={genreInput}
+                      onValueChange={setGenreInput}
+                    />
+                    <CommandList>
+                      <CommandEmpty className="p-2">
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-xs h-8"
+                          onClick={() => addGenre(genreInput)}
+                        >
+                          <Plus className="size-3 mr-2" />
+                          {language === 'it' ? `Aggiungi "${genreInput}"` : `Add "${genreInput}"`}
+                        </Button>
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {allExistingGenres.filter(g => !selectedGenres.includes(g)).map(genre => (
+                          <CommandItem
+                            key={genre}
+                            value={genre}
+                            onSelect={() => addGenre(genre)}
+                            className="text-sm"
+                          >
+                            <Check className={`mr-2 size-4 opacity-0`} />
+                            {genre}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
 
           <FormField
             control={form.control}
