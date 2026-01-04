@@ -5,8 +5,10 @@
     "module": "ESNext",
     "target": "ES2020",
     "moduleResolution": "Node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": []  // <-- importante, non includere vite/client
   },
   "include": ["server/**/*.ts", "script/**/*.ts"],
-  "exclude": ["client/**/*", "vite.config.ts", "node_modules"]
+  "exclude": ["client/**/*", "node_modules", "vite.config.ts"]
 }
