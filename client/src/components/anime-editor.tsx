@@ -8,19 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Save, Trash2, Plus, Image as ImageIcon, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import { Upload, X, Save, Trash2, Plus, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 const animeSchema = z.object({
   title: z.string().min(1, "Title is required"),
   studio: z.string().min(1, "Studio is required"),
   releaseDate: z.string().min(1, "Date is required"),
   description: z.string().optional(),
-  genreString: z.string().optional(),
   episodes: z.number().optional().or(z.string().transform(v => v === '' ? undefined : Number(v))),
 });
 
@@ -64,8 +62,8 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>(anime?.gallery || []);
   const [selectedGenres, setSelectedGenres] = useState<string[]>(anime?.genre || []);
   const [genreInput, setGenreInput] = useState('');
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   
-  // Combine default genres with existing ones from other animes
   const allExistingGenres = Array.from(new Set([...defaultGenres, ...animes.flatMap(a => a.genre)]));
 
   const form = useForm<z.infer<typeof animeSchema>>({
@@ -75,7 +73,6 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
       studio: anime?.studio || '',
       releaseDate: anime?.releaseDate || '',
       description: anime?.description || '',
-      genreString: '', // No longer used for input but kept for schema compatibility
       episodes: anime?.episodes || undefined,
     }
   });
@@ -142,6 +139,7 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
       setSelectedGenres(prev => [...prev, trimmed]);
     }
     setGenreInput('');
+    setIsPopoverOpen(false);
   };
 
   const removeGenre = (genre: string) => {
@@ -153,7 +151,6 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Cover Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium">{language === 'it' ? 'Copertina' : 'Cover Image'}</label>
               <div className="relative aspect-[3/4] w-full rounded-2xl border-2 border-dashed border-white/10 bg-black/20 overflow-hidden group hover:border-primary/50 transition-all">
@@ -168,9 +165,9 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
                   </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                    <Upload className="size-8 mb-2 text-muted-foreground" />
+                    <Plus className="size-8 mb-2 text-muted-foreground" />
                     <p className="text-xs text-muted-foreground">{language === 'it' ? 'Clicca per caricare' : 'Click to upload'}</p>
-                    <Input 
+                    <input 
                       type="file" 
                       accept="image/*" 
                       className="absolute inset-0 opacity-0 cursor-pointer" 
@@ -181,7 +178,6 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
               </div>
             </div>
 
-            {/* Gallery Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Gallery</label>
               <div className="grid grid-cols-2 gap-2">
@@ -200,7 +196,7 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
                 <div className="relative aspect-video rounded-xl border-2 border-dashed border-white/10 bg-black/10 hover:border-primary/50 transition-all flex flex-col items-center justify-center cursor-pointer">
                   <Plus className="size-5 text-muted-foreground" />
                   <span className="text-[10px] mt-1 text-muted-foreground">Add</span>
-                  <Input 
+                  <input 
                     type="file" 
                     accept="image/*" 
                     multiple
@@ -270,7 +266,6 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
             />
           </div>
 
-          {/* Genre Management */}
           <div className="space-y-3">
             <label className="text-sm font-medium">{language === 'it' ? 'Generi' : 'Genres'}</label>
             <div className="flex flex-wrap gap-2 p-2 min-h-[46px] rounded-xl border border-white/5 bg-black/20">
@@ -281,20 +276,20 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
                 </Badge>
               ))}
               
-              <Popover>
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-7 px-2 rounded-lg text-xs border border-dashed border-white/20 hover:border-primary/50">
                     <Plus className="size-3 mr-1" /> {language === 'it' ? 'Aggiungi genere' : 'Add genre'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[300px] p-0 glass-panel" align="start">
-                  <Command>
+                  <Command className="bg-transparent border-none">
                     <CommandInput 
                       placeholder={language === 'it' ? 'Cerca o scrivi...' : 'Search or type...'} 
                       value={genreInput}
                       onValueChange={setGenreInput}
                     />
-                    <CommandList>
+                    <CommandList className="bg-background/80 backdrop-blur-md">
                       <CommandEmpty className="p-2">
                         <Button 
                           variant="ghost" 
@@ -311,7 +306,7 @@ export function AnimeEditor({ anime, onClose }: AnimeEditorProps) {
                             key={genre}
                             value={genre}
                             onSelect={() => addGenre(genre)}
-                            className="text-sm"
+                            className="text-sm cursor-pointer"
                           >
                             <Check className={`mr-2 size-4 opacity-0`} />
                             {genre}
